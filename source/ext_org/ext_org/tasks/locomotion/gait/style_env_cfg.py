@@ -24,7 +24,7 @@ class CommandsCfg:
         ranges=commands_cfg.StyleCommandCfg.Ranges(
             lin_vel_x=(-2.0, 6.0),
             lin_vel_y=(-1.5, 1.5),
-            ang_vel_z=(2.0, 2.0),
+            ang_vel_z=(- 2.0, 2.0),
             heading=(-math.pi, math.pi),
 
             frequencie=(0.8, 4),
