@@ -128,6 +128,7 @@ class StyleEnvCfg_PLAY(StyleEnvCfg):
         super().__post_init__()
 
         # make a smaller scene for play
+        self.episode_length_s = 500.0
         self.scene.num_envs = 4
         self.scene.env_spacing = 2.5
         # spawn the robot randomly in the grid (instead of their terrain levels)

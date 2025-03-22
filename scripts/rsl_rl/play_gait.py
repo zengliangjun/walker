@@ -27,7 +27,8 @@ args_cli = parser.parse_args()
 if args_cli.video:
     args_cli.enable_cameras = True
 
-args_cli.task = "Quadruped-Go2StyleLatent-Play-v0"
+#args_cli.task = "Quadruped-Go2StyleLatent-Play-v0"
+args_cli.num_envs = 1
 # launch omniverse app
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
@@ -47,6 +48,14 @@ from isaaclab_tasks.utils import get_checkpoint_path, parse_env_cfg
 
 # Import extensions to set up environment tasks
 import ext_org.tasks  # noqa: F401
+
+
+def track_robot(_env):
+    robot_pos_w = _env.unwrapped.scene["robot"].data.root_pos_w[0].detach().cpu().numpy()
+    cam_eye = (robot_pos_w[0] + 2.5, robot_pos_w[1] + 2.5, 1.2)
+    cam_target = (robot_pos_w[0], robot_pos_w[1], 0.0)
+    # set the camera view
+    _env.unwrapped.sim.set_camera_view(eye=cam_eye, target=cam_target)
 
 
 def main():
@@ -108,6 +117,8 @@ def main():
     style = extras["observations"].get("style")
 
     timestep = 0
+    track_robot(env)
+
     # simulate environment
     while simulation_app.is_running():
         # run everything in inference mode
@@ -119,6 +130,8 @@ def main():
             obs, _, _, infos = env.step(actions)
 
             style = infos["observations"].get("style")
+
+            track_robot(env)
 
         if args_cli.video:
             timestep += 1
