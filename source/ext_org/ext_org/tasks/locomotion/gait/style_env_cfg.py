@@ -127,6 +127,8 @@ class StyleEnvCfg_PLAY(StyleEnvCfg):
         # post init of parent
         super().__post_init__()
 
+        self.commands.base_velocity.resampling_time_range = (3.0, 5.0)
+
         # make a smaller scene for play
         self.episode_length_s = 500.0
         self.scene.num_envs = 4
