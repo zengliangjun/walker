@@ -6,3 +6,4 @@ from .commands_cfg import (
 )
 from .gait_command import GaitCommand, StyleCommand
 from .pos_command import PosGaitCommand
+from .gait_bipedscommand import BipedsStyleCommand

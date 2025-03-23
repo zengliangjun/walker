@@ -1,7 +1,7 @@
 from dataclasses import MISSING
 from isaaclab.utils import configclass
 from isaaclab.envs.mdp.commands import commands_cfg
-from isaaclabex.envs.mdp.commands import gait_command
+from isaaclabex.envs.mdp.commands import gait_command, gait_bipedscommand
 from isaaclabex.envs.mdp.commands import pos_command
 
 @configclass
@@ -86,3 +86,28 @@ class PosGaitCommandCfg(commands_cfg.UniformVelocityCommandCfg):
         gait_frequencie: tuple[float, float] = MISSING
         gait_duty_cycle: tuple[float, float] = MISSING
         gait_height: tuple[float, float] = MISSING
+
+@configclass
+class BipedsStyleCommandCfg(commands_cfg.UniformVelocityCommandCfg):
+    class_type: type = gait_bipedscommand.BipedsStyleCommand
+
+    # gait style
+    '''
+    同步
+    不同步
+    '''
+    style: int = 0  #
+    # gait frequencie
+    frequencie: float = 1.6
+
+    duty_cycle: float = 0.6
+    # gait lift_height
+    height: float = 0.25
+
+    @configclass
+    class Ranges(commands_cfg.UniformVelocityCommandCfg.Ranges):
+        frequencie: tuple[float, float] = MISSING
+        duty_cycle: tuple[float, float] = MISSING
+        height: tuple[float, float] = MISSING
+
+    ranges: Ranges = MISSING

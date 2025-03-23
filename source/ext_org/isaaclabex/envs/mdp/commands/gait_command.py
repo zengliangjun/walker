@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv
     from .commands_cfg import GaitCommandCfg, StyleCommandCfg
 
+
 class GaitCommand(velocity_command.UniformVelocityCommand):
 
     def __init__(self, cfg: GaitCommandCfg, env: ManagerBasedEnv):
