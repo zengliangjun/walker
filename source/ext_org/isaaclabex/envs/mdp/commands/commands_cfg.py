@@ -1,11 +1,20 @@
 from dataclasses import MISSING
 from isaaclab.utils import configclass
 from isaaclab.envs.mdp.commands import commands_cfg
+from isaaclabex.envs.mdp.commands import curriculum_command
 from isaaclabex.envs.mdp.commands import gait_command, gait_bipedscommand
 from isaaclabex.envs.mdp.commands import pos_command
 
 @configclass
-class GaitCommandCfg(commands_cfg.UniformVelocityCommandCfg):
+class CurriculumCommandCfg(commands_cfg.UniformVelocityCommandCfg):
+    class_type: type = curriculum_command.CurriculumCommand
+
+    is_curriculum: bool = False
+    max_curriculum: int = 1
+
+
+@configclass
+class GaitCommandCfg(CurriculumCommandCfg):
     class_type: type = gait_command.GaitCommand
 
     frequencie: float = 1.6
@@ -23,7 +32,7 @@ class GaitCommandCfg(commands_cfg.UniformVelocityCommandCfg):
     ranges: Ranges = MISSING
 
 @configclass
-class StyleCommandCfg(commands_cfg.UniformVelocityCommandCfg):
+class StyleCommandCfg(CurriculumCommandCfg):
     class_type: type = gait_command.StyleCommand
 
     # gait style
@@ -51,7 +60,7 @@ class StyleCommandCfg(commands_cfg.UniformVelocityCommandCfg):
 
 
 @configclass
-class PosGaitCommandCfg(commands_cfg.UniformVelocityCommandCfg):
+class PosGaitCommandCfg(CurriculumCommandCfg):
     class_type: type = pos_command.PosGaitCommand
 
     # pos height control [0.8 ~ 1]
@@ -88,7 +97,7 @@ class PosGaitCommandCfg(commands_cfg.UniformVelocityCommandCfg):
         gait_height: tuple[float, float] = MISSING
 
 @configclass
-class BipedsStyleCommandCfg(commands_cfg.UniformVelocityCommandCfg):
+class BipedsStyleCommandCfg(CurriculumCommandCfg):
     class_type: type = gait_bipedscommand.BipedsStyleCommand
 
     # gait style

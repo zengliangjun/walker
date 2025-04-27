@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import torch
 from collections.abc import Sequence
-from isaaclab.envs.mdp.commands import velocity_command
+from isaaclabex.envs.mdp.commands import curriculum_command
 from torch.nn import functional as F
 
 if TYPE_CHECKING:
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from .commands_cfg import GaitCommandCfg, StyleCommandCfg
 
 
-class GaitCommand(velocity_command.UniformVelocityCommand):
+class GaitCommand(curriculum_command.CurriculumCommand):
 
     def __init__(self, cfg: GaitCommandCfg, env: ManagerBasedEnv):
         super(GaitCommand, self).__init__(cfg, env)
@@ -87,7 +87,7 @@ class GaitCommand(velocity_command.UniformVelocityCommand):
         self.rrgait[:, -1:] = _phase[:, 3:]
 
 
-class StyleCommand(velocity_command.UniformVelocityCommand):
+class StyleCommand(curriculum_command.CurriculumCommand):
 
     def __init__(self, cfg: StyleCommandCfg, env: ManagerBasedEnv):
         super(StyleCommand, self).__init__(cfg, env)

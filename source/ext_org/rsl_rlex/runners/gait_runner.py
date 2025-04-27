@@ -64,7 +64,7 @@ class GaitPolicyRunner(OnPolicyRunner):
         if self.empirical_normalization:
             self.obs_normalizer = EmpiricalNormalization(shape=[num_obs], until=1.0e8).to(self.device)
             self.critic_obs_normalizer = EmpiricalNormalization(shape=[num_critic_obs], until=1.0e8).to(self.device)
-            self.style_normalizer = EmpiricalNormalization(shape=[num_style], until=1.0e8).to(self.device)
+            self.style_normalizer = torch.nn.Identity()  #EmpiricalNormalization(shape=[num_style], until=1.0e8).to(self.device)
         else:
             self.obs_normalizer = torch.nn.Identity()  # no normalization
             self.critic_obs_normalizer = torch.nn.Identity()  # no normalization

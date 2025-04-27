@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
-
+import isaaclab.utils.math as math_utils
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
@@ -61,6 +61,30 @@ def joint_position_penalty(
     return reward
 
 
+def space_feet_penalty(
+        env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, base_names: list[str], feet_names: list[str]) -> torch.Tensor:
+
+    asset: Articulation = env.scene[asset_cfg.name]
+
+    base_ids, _ = asset.find_bodies(base_names, preserve_order=True)
+    feet_ids, _ = asset.find_bodies(feet_names, preserve_order=True)
+
+    base_pos_w = asset.data.body_pos_w[:, base_ids]
+    feet_pos_w = asset.data.body_pos_w[:, feet_ids]
+
+    _qat_w = asset.data.root_link_quat_w[:, None, :].repeat(1, base_pos_w.shape[1], 1)
+    base_pos_b = math_utils.quat_rotate_inverse(_qat_w, base_pos_w)
+    _qat_w = asset.data.root_link_quat_w[:, None, :].repeat(1, feet_pos_w.shape[1], 1)
+    feet_pos_b = math_utils.quat_rotate_inverse(_qat_w, feet_pos_w)
+
+    base_width = base_pos_b[:, : : 2, 1] - base_pos_b[:, 1: : 2, 1]
+    feet_width = feet_pos_b[:, : : 2, 1] - feet_pos_b[:, 1: : 2, 1]
+    base_width[:, :] = 0.4
+
+    reward = torch.abs(feet_width / base_width) - 1
+    reward = torch.linalg.norm(reward, dim=1)
+    return reward
+
 def bipeds_foot_clearance_reward(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, std: float, foot_names: list[str]
 ) -> torch.Tensor:
@@ -79,10 +103,10 @@ def bipeds_foot_clearance_reward(
     _swing_cycles = 1 - _duty_cycles
     _swing_phases = _phases / _swing_cycles
     _swing_phases = torch.clip(_swing_phases, min=0, max=1)
-    _target_height = _lift_heights * torch.sin(_swing_phases * torch.pi)
+    _target_height = torch.clamp(_lift_heights * torch.sin(_swing_phases * torch.pi), 0.001)
 
-    _error = torch.square(_heights - _target_height)
-    return torch.exp(-torch.sum(_error, dim=1) / std)
+    _error = _heights - _target_height
+    return torch.norm(_error, dim=1)
 
 def bipeds_joint_position_penalty(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, joint_names: list[str], weights: list[float]) -> torch.Tensor:

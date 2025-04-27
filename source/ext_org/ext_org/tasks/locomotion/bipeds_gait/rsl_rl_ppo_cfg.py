@@ -9,7 +9,7 @@ class StyleLatentPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     max_iterations = 100000
     save_interval = 500
     experiment_name = "h1_stylelatent_flat"
-    empirical_normalization = False
+    empirical_normalization = True
     store_code_state = False
     policy = StylePpoActorCriticCfg(
         init_noise_std=1.0,

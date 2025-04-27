@@ -5,7 +5,7 @@ import math
 from isaaclab.managers import RewardTermCfg, SceneEntityCfg
 from isaaclab.utils import configclass
 from isaaclab.managers import EventTermCfg as EventTerm
-from isaaclab.managers import ObservationTermCfg as ObsTerm
+from isaaclab.managers import ObservationTermCfg as ObsTerm, CurriculumTermCfg
 from isaaclabex.envs.mdp import style_rewards
 from isaaclabex.envs.mdp.commands import commands_cfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
@@ -14,8 +14,8 @@ import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 from isaaclabex.envs.mdp import privileged_observations
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
-from isaaclabex.envs.mdp import observations
-from isaaclab_assets import H1_MINIMAL_CFG
+from isaaclabex.envs.mdp import observations, curriculum
+from isaaclab_assets import H1_CFG
 from isaaclab_tasks.manager_based.locomotion.velocity.velocity_env_cfg import LocomotionVelocityRoughEnvCfg
 
 
@@ -30,21 +30,24 @@ class CommandsCfg:
     """Command specifications for the MDP."""
     base_velocity = commands_cfg.BipedsStyleCommandCfg(
         asset_name="robot",
-        resampling_time_range=(3.0, 10.0),
+        resampling_time_range=(6.0, 10.0),
         rel_standing_envs=0.02,
         rel_heading_envs=0,
         heading_command=False,
         debug_vis=True,
 
+        is_curriculum=True,
+        max_curriculum=10,
+
         ranges=commands_cfg.BipedsStyleCommandCfg.Ranges(
-            lin_vel_x=(-2.0, 6.0),
+            lin_vel_x=(-2.0, 12.0),
             lin_vel_y=(-1.5, 1.5),
             ang_vel_z=(- 2.0, 2.0),
             heading=(-math.pi, math.pi),
 
             frequencie=(0.8, 4),
             duty_cycle=(0.3, 0.7),
-            height=(0.05, 0.25),
+            height=(0.05, 0.45),
         ),
     )
 
@@ -230,18 +233,18 @@ class RewardsCfg:
     """Reward terms for the MDP."""
     base_angular_velocity = RewardTermCfg(
         func=spot_mdp.base_angular_velocity_reward,
-        weight=1.0,
+        weight=3.0,
         params={"std": 1.0, "asset_cfg": SceneEntityCfg("robot")},
     )
     base_linear_velocity = RewardTermCfg(
         func=spot_mdp.base_linear_velocity_reward,
-        weight=3.0,
-        params={"std": 4.0, "ramp_rate": 0.5, "ramp_at_vel": 1.0, "asset_cfg": SceneEntityCfg("robot")},
+        weight=5.0,
+        params={"std": 1.0, "ramp_rate": 0.5, "ramp_at_vel": 1.0, "asset_cfg": SceneEntityCfg("robot")},
     )
 
     foot_clearance = RewardTermCfg(
         func=style_rewards.bipeds_foot_clearance_reward,
-        weight=2.0,
+        weight=-.5,
         params={
             "std": 0.05,
             "asset_cfg": SceneEntityCfg("robot"),
@@ -294,6 +297,17 @@ class RewardsCfg:
         },
     )
 
+    space_feet = RewardTermCfg(
+        func=style_rewards.space_feet_penalty,
+        weight=-0.5,
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "base_names": ['left_hip_yaw_link', 'right_hip_yaw_link'],
+            "feet_names": ['left_knee_link', 'right_knee_link',
+                           'left_ankle_link', 'right_ankle_link'],
+        },
+    )
+
     joint_deviation_torso = RewardTermCfg(
         func=mdp.joint_deviation_l1, weight=-5, params={"asset_cfg": SceneEntityCfg("robot", joint_names="torso")}
     )
@@ -336,6 +350,12 @@ class TerminationsCfg:
 
 
 @configclass
+class CurriculumCfg:
+    """Curriculum terms for the MDP."""
+    command_levels = CurriculumTermCfg(func=curriculum.comand_levels_vel)
+
+
+@configclass
 class StyleLatentEnvCfg(LocomotionVelocityRoughEnvCfg):
     """Configuration for the locomotion velocity-tracking environment."""
     # Basic settings
@@ -347,23 +367,29 @@ class StyleLatentEnvCfg(LocomotionVelocityRoughEnvCfg):
     terminations: TerminationsCfg = TerminationsCfg()
     events: EventCfg = EventCfg()
 
+    curriculum = CurriculumCfg()
+
     def __post_init__(self):
         """Post initialization."""
         self.scene.terrain.terrain_type = "plane"
         self.scene.terrain.terrain_generator = None
         self.scene.height_scanner = None
-        self.curriculum = None
 
         super(StyleLatentEnvCfg, self).__post_init__()
-        self.scene.robot = H1_MINIMAL_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        self.scene.robot = H1_CFG.copy().replace(prim_path="{ENV_REGEX_NS}/Robot")
+        #self.scene.robot.spawn.articulation_props.enabled_self_collisions=True
 
 
+@configclass
 class StyleLatentEnvCfg_PLAY(StyleLatentEnvCfg):
+
+    curriculum = None
 
     def __post_init__(self) -> None:
         # post init of parent
         super().__post_init__()
 
+        self.commands.base_velocity.is_curriculum = False
         self.commands.base_velocity.resampling_time_range = (3.0, 5.0)
 
         # make a smaller scene for play

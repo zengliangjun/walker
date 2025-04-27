@@ -52,7 +52,7 @@ import ext_org.tasks  # noqa: F401
 
 def track_robot(_env):
     robot_pos_w = _env.unwrapped.scene["robot"].data.root_pos_w[0].detach().cpu().numpy()
-    cam_eye = (robot_pos_w[0] + 2.5, robot_pos_w[1] + 2.5, 1.2)
+    cam_eye = (robot_pos_w[0] + 3, robot_pos_w[1] + 3, 4)
     cam_target = (robot_pos_w[0], robot_pos_w[1], 0.0)
     # set the camera view
     _env.unwrapped.sim.set_camera_view(eye=cam_eye, target=cam_target)
@@ -127,11 +127,12 @@ def main():
             _input = obs, style
             actions = policy(_input)
             # env stepping
-            obs, _, _, infos = env.step(actions)
+            obs, _, dones, infos = env.step(actions)
 
             style = infos["observations"].get("style")
 
             track_robot(env)
+            _
 
         if args_cli.video:
             timestep += 1

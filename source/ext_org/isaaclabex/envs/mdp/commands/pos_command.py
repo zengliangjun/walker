@@ -3,14 +3,14 @@ from typing import TYPE_CHECKING
 import torch
 from torch.nn import functional as F
 from collections.abc import Sequence
-from isaaclab.envs.mdp.commands import velocity_command
+from .curriculum_command import CurriculumCommand
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv
     from .commands_cfg import PosGaitCommandCfg
 
 
-class PosGaitCommand(velocity_command.UniformVelocityCommand):
+class PosGaitCommand(CurriculumCommand):
 
     def __init__(self, cfg: PosGaitCommandCfg, env: ManagerBasedEnv):
         super().__init__(cfg, env)

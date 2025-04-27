@@ -3,15 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import torch
 from collections.abc import Sequence
-from isaaclab.envs.mdp.commands import velocity_command
 from torch.nn import functional as F
+from .curriculum_command import CurriculumCommand
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv
     from .commands_cfg import BipedsStyleCommandCfg
 
-
-class BipedsStyleCommand(velocity_command.UniformVelocityCommand):
+class BipedsStyleCommand(CurriculumCommand):
 
     def __init__(self, cfg: BipedsStyleCommandCfg, env: ManagerBasedEnv):
         super(BipedsStyleCommand, self).__init__(cfg, env)
@@ -47,7 +46,7 @@ class BipedsStyleCommand(velocity_command.UniformVelocityCommand):
 
         r = torch.empty(len(env_ids), device=self.device)
         styles = torch.randint_like(r, 0, 100, device=self.device)
-        styles = (styles > 20).long()
+        styles = (styles > 33).long()
         _styles_one_hot = F.one_hot(styles, num_classes=2)
 
         _frequencie = r.uniform_(*self.cfg.ranges.frequencie)
