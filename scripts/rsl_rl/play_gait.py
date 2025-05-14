@@ -27,7 +27,7 @@ args_cli = parser.parse_args()
 if args_cli.video:
     args_cli.enable_cameras = True
 
-#args_cli.task = "Quadruped-Go2StyleLatent-Play-v0"
+args_cli.task = "H1StyleLatent-Play-v0"
 args_cli.num_envs = 1
 # launch omniverse app
 app_launcher = AppLauncher(args_cli)
@@ -38,6 +38,11 @@ simulation_app = app_launcher.app
 import gymnasium as gym
 import os
 import torch
+
+_root = "/workspace/VS2025/SIMULATION/ISAACSIM45ENVS/IsaacLabQuadruped/source/ext_org"
+import sys
+sys.path.append(_root)
+
 
 from rsl_rlex.runners import gait_runner
 
