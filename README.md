@@ -20,6 +20,26 @@ python scripts/rsl_rl/train_gait.py --task=Quadruped-Go2StyleLatent-v0 --headles
 python scripts/rsl_rl/play_gait.py --task=Quadruped-Go2StyleLatent-Play-v0
 ```
 
-[简单视频](https://pan.baidu.com/s/1MuLAX2N4oXyPpaJAQ9cNTg&fc7e)
-（不同步态、不同速度自由切换、可高速运行；仍有改进空间）
+[Simple video](https://pan.baidu.com/s/1MuLAX2N4oXyPpaJAQ9cNTg&fc7e)
+（Free switching between different gaits and speeds, capable of high-speed operation; There is still room for improvement）
+
+
+### Training
+
+```bash
+python scripts/rsl_rl/train_gait.py --task=H1StyleLatent-v0 --headless
+```
+
+### Playing
+```bash
+python scripts/rsl_rl/play_gait.py --task=H1StyleLatent-Play-v0
+```
+At present, we only focus on the performance of bipedal operation, and there will be optimization in the future
+(1) Better control of the relationship between speed and stride frequency.
+(2) Course learning still needs to be implemented more reasonably.
+(3) Can add the rewards of dual arm symmetry operation and constraint control.
+
+## Stage 2
+
+TODO
 

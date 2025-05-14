@@ -49,8 +49,13 @@ simulation_app = app_launcher.app
 
 import gymnasium as gym
 import os
+import os.path as osp
 import torch
 from datetime import datetime
+
+_root = osp.join(osp.dirname(__file__), "../../source/ext_org")
+import sys
+sys.path.append(_root)
 
 from rsl_rlex.runners import gait_runner
 
