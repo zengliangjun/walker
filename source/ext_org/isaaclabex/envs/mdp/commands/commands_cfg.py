@@ -12,25 +12,6 @@ class CurriculumCommandCfg(commands_cfg.UniformVelocityCommandCfg):
     is_curriculum: bool = False
     max_curriculum: int = 1
 
-
-@configclass
-class GaitCommandCfg(CurriculumCommandCfg):
-    class_type: type = gait_command.GaitCommand
-
-    frequencie: float = 1.6
-    duty_cycle: float = 0.8
-    lift_height: float = 0.25
-    phase_offset: tuple[float, float, float, float] = (0.0, 0.25, 0.5, 0.75)
-
-    @configclass
-    class Ranges(commands_cfg.UniformVelocityCommandCfg.Ranges):
-        frequencie: tuple[float, float] = MISSING
-        duty_cycle: tuple[float, float] = MISSING
-        lift_height: tuple[float, float] = MISSING
-        #phase_offset: tuple[float, float] = (0, 1)
-
-    ranges: Ranges = MISSING
-
 @configclass
 class StyleCommandCfg(CurriculumCommandCfg):
     class_type: type = gait_command.StyleCommand

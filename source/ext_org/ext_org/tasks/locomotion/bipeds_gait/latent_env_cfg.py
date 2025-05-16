@@ -14,7 +14,7 @@ import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 from isaaclabex.envs.mdp import privileged_observations
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
-from isaaclabex.envs.mdp import observations, curriculum
+from isaaclabex.envs.mdp import observations
 from isaaclab_assets import H1_CFG
 from isaaclab_tasks.manager_based.locomotion.velocity.velocity_env_cfg import LocomotionVelocityRoughEnvCfg
 
@@ -36,7 +36,7 @@ class CommandsCfg:
         heading_command=False,
         debug_vis=True,
 
-        is_curriculum=True,
+        is_curriculum=False,
         max_curriculum=10,
 
         ranges=commands_cfg.BipedsStyleCommandCfg.Ranges(
@@ -320,7 +320,7 @@ class RewardsCfg:
     joint_vel = RewardTermCfg(
         func=spot_mdp.joint_velocity_penalty,
         weight=-1.0e-4,
-        params={"asset_cfg": 
+        params={"asset_cfg":
                 SceneEntityCfg("robot",
                                joint_names=[".*hip_yaw",
                                             ".*hip_roll",
@@ -350,12 +350,6 @@ class TerminationsCfg:
 
 
 @configclass
-class CurriculumCfg:
-    """Curriculum terms for the MDP."""
-    command_levels = CurriculumTermCfg(func=curriculum.comand_levels_vel)
-
-
-@configclass
 class StyleLatentEnvCfg(LocomotionVelocityRoughEnvCfg):
     """Configuration for the locomotion velocity-tracking environment."""
     # Basic settings
@@ -366,8 +360,6 @@ class StyleLatentEnvCfg(LocomotionVelocityRoughEnvCfg):
     rewards: RewardsCfg = RewardsCfg()
     terminations: TerminationsCfg = TerminationsCfg()
     events: EventCfg = EventCfg()
-
-    curriculum = CurriculumCfg()
 
     def __post_init__(self):
         """Post initialization."""
