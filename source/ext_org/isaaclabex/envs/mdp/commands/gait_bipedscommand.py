@@ -79,7 +79,7 @@ class BipedsStyleCommand(CurriculumCommand):
     def _update_command(self):
         super(BipedsStyleCommand, self)._update_command()
 
-        _step_phase = self._env.step_dt * self.style_command_b[:, : 1]
+        _step_phase = self._env.step_dt * self.style_command_b[:, 2: 3] # _frequencie
         self.phases = self.phases + _step_phase
 
         _phases = torch.clip(self.phases, min=0)

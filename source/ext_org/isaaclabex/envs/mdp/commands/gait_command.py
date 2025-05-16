@@ -82,7 +82,7 @@ class StyleCommand(curriculum_command.CurriculumCommand):
     def _update_command(self):
         super(StyleCommand, self)._update_command()
 
-        _step_phase = self._env.step_dt * self.style_command_b[:, : 1]
+        _step_phase = self._env.step_dt * self.style_command_b[:, 4: 5]
         self.phases = self.phases + _step_phase
 
         _phases = torch.clip(self.phases, min=0)
