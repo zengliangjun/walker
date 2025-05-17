@@ -20,27 +20,26 @@ class CurriculumCommand(velocity_command.UniformVelocityCommand):
         super(CurriculumCommand, self).__init__(cfg, env)
         if not self.cfg.is_curriculum:
             return
-        self._current_levels = torch.ones((self.num_envs, ), dtype=torch.float32, device=self.device)
+        self._current_levels = 1 #torch.ones((self.num_envs, ), dtype=torch.float32, device=self.device)
 
     def _resample_command(self, env_ids: Sequence[int]):
         super(CurriculumCommand, self)._resample_command(env_ids)
         if not self.cfg.is_curriculum:
             return
-        self.vel_command_b[env_ids] *= (self._current_levels[env_ids].unsqueeze(1) / self.cfg.max_curriculum_levels)
+        self.vel_command_b[env_ids] *= (self._current_levels / self.cfg.max_curriculum_levels)
 
     '''
     called by curriculum
     '''
-    def curriculum_up_levels(self):
+    def curriculum_up_levels(self, _levels):
         if not self.cfg.is_curriculum:
             return
 
-        self._current_levels[:] += 1
-        self._current_levels[:] = torch.clamp(self._current_levels, 1.0, self.cfg.max_curriculum_levels)
+        self._current_levels = max(min(_levels, self.cfg.max_curriculum_levels), 1)
 
     @property
     def current_levels(self):
         if not self.cfg.is_curriculum:
             return torch.tensor([0], device = self.device)
 
-        return torch.mean(self._current_levels)
+        return self._current_levels

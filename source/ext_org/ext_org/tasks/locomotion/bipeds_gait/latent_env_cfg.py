@@ -244,8 +244,8 @@ class RewardsCfg:
     reward_track_ang_vel_z_exp = rewards.RewardTermCfgWithCurriculum(
         func=mdp.track_ang_vel_z_exp, params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
         weight=0.5,
-        start_weight=4.0,
-        end_weight=1.0,
+        start_weight=3.0,
+        end_weight=0.5,
     )
 
     # -- penalties
@@ -270,7 +270,7 @@ class RewardsCfg:
             "body_names": ['left_knee_link', 'right_knee_link',
                            'left_ankle_link', 'right_ankle_link'],
         },
-        start_weight=-.1,
+        start_weight=-.3,
         end_weight=-0.5
     )
 
@@ -282,7 +282,7 @@ class RewardsCfg:
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_ankle_link"),
             "threshold": 1.0,
         },
-        start_weight=-.3,
+        start_weight=-.7,
         end_weight=-1.0
     )
 
@@ -290,18 +290,18 @@ class RewardsCfg:
     penalize_action_smoothness = rewards.RewardTermCfgWithCurriculum(
         func=spot_mdp.action_smoothness_penalty,
         weight=-1.0,
-        start_weight=-.1,
+        start_weight=-.5,
         end_weight=-1.0)
 
     penalize_base_motion = rewards.RewardTermCfgWithCurriculum(
         func=spot_mdp.base_motion_penalty, weight=-.5, params={"asset_cfg": SceneEntityCfg("robot")},
-        start_weight=-.1,
+        start_weight=-.3,
         end_weight=-.5
     )
 
     penalize_base_orientation = rewards.RewardTermCfgWithCurriculum(
         func=spot_mdp.base_orientation_penalty, weight=-3.0, params={"asset_cfg": SceneEntityCfg("robot")},
-        start_weight=-.5,
+        start_weight=-1.5,
         end_weight=-3.0
     )
 
@@ -309,7 +309,7 @@ class RewardsCfg:
     # join style
     penalize_leg_joint_pos = rewards.RewardTermCfgWithCurriculum(
         func=bipeds_style.bipeds_leg_joint_position_penalty,
-        weight=-2.5,
+        weight=-0.9,
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "joint_names": ['left_hip_yaw', 'left_hip_roll', 'left_hip_pitch',
@@ -329,13 +329,13 @@ class RewardsCfg:
             "feet_names": ['left_ankle', 'right_ankle'],
             "feet_weights": [1, 1],
         },
-        start_weight=-.1,
-        end_weight=-2.5
+        start_weight=-.6,
+        end_weight=-0.9
     )
 
     penalize_shoulder_joint_freeze_pos = rewards.RewardTermCfgWithCurriculum(
         func=general.penalty_joint_freeze,
-        weight=-2,
+        weight=-1,
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "joint_names": ['left_shoulder_yaw',  'left_shoulder_roll', 'left_shoulder_pitch', 'left_elbow',
@@ -345,8 +345,8 @@ class RewardsCfg:
             "joint_weights": [1.5, 1.5, 1, 1.5,
                         1.5, 1.5, 1, 1.5]
         },
-        start_weight=-.3,
-        end_weight=-2
+        start_weight=-.5,
+        end_weight=-1
     )
 
     # join acc
@@ -362,7 +362,7 @@ class RewardsCfg:
     penalize_joint_deviation_torso = rewards.RewardTermCfgWithCurriculum(
         func=mdp.joint_deviation_l1, weight=-5, params={"asset_cfg": SceneEntityCfg("robot", joint_names="torso")},
         start_weight=-.5,
-        end_weight=-5
+        end_weight=-2
     )
 
     # join torques

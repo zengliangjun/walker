@@ -26,9 +26,9 @@ def command_curriculum_levels_vel(
         command.update_curriculum(env_ids, move_down, move_up)
     '''
     command = env.command_manager.get_term(command_name)
-    _steps = env.cfg.max_iterations // int (command.cfg.max_curriculum_levels * 1.5)
-    if env.common_step_counter > _steps and 0 == env.common_step_counter % _steps:
-        command.curriculum_up_levels()
+    _steps = env.cfg.max_iterations // int (command.cfg.max_curriculum_levels * 4)
+    _levels = env.common_step_counter // _steps + 1
+    command.curriculum_up_levels(_levels)
 
     # return the mean terrain level
     return command.current_levels

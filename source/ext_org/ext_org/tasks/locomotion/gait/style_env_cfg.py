@@ -5,7 +5,7 @@ import math
 from isaaclab.managers import RewardTermCfg, SceneEntityCfg
 from isaaclab.utils import configclass
 
-from isaaclabex.envs.mdp import style_rewards
+from source.ext_org.isaaclabex.envs.mdp.rewards import quadruped_style
 from isaaclabex.envs.mdp.commands import commands_cfg
 import isaaclab_tasks.manager_based.locomotion.velocity.config.spot.mdp as spot_mdp
 from . import spot_env_cfg
@@ -48,7 +48,7 @@ class RewardsCfg:
     )
 
     foot_clearance = RewardTermCfg(
-        func=style_rewards.foot_clearance_reward,
+        func=quadruped_style.foot_clearance_reward,
         weight=2.0,
         params={
             "std": 0.05,
@@ -80,7 +80,7 @@ class RewardsCfg:
         params={"asset_cfg": SceneEntityCfg("robot")}
     )
     joint_pos = RewardTermCfg(
-        func=style_rewards.joint_position_penalty,
+        func=quadruped_style.joint_position_penalty,
         weight=-1.4,
         params={
             "asset_cfg": SceneEntityCfg("robot"),
