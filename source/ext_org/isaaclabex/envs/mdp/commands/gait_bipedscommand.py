@@ -75,12 +75,16 @@ class BipedsStyleCommand(CurriculumCommand):
         self.style_command_b[env_ids, 2] = _frequencie
         self.style_command_b[env_ids, 3] = _duty_cycle
         self.style_command_b[env_ids, 4] = _height
+        self.style_command_b[env_ids, 5:] = 0
 
         # standing
         standing_env_ids = self.is_standing_env.nonzero(as_tuple=False).flatten()
         self.style_command_b[standing_env_ids, :] = 0
         self.styles[standing_env_ids, :] = 0
         self.phases[standing_env_ids, :] = 0
+
+        if self._env.cfg.env_debug_flags:
+            print("command", self.styles, self.vel_command_b, self.style_command_b, self.phases)
 
     def _update_command(self):
         super(BipedsStyleCommand, self)._update_command()

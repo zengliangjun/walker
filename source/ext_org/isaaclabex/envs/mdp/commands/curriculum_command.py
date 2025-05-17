@@ -31,17 +31,12 @@ class CurriculumCommand(velocity_command.UniformVelocityCommand):
     '''
     called by curriculum
     '''
-    def update_curriculum(self, env_ids, move_down, move_up):
+    def curriculum_up_levels(self):
         if not self.cfg.is_curriculum:
             return
-        if len(env_ids) != 0:
 
-            ids_downs = env_ids[move_down]
-            ids_ups = env_ids[move_up]
-
-            self._current_levels[ids_downs] -= 0.5
-            self._current_levels[ids_ups] += 0.5
-            self._current_levels[env_ids] = torch.clamp(self._current_levels[env_ids], 1.0, self.cfg.max_curriculum_levels)
+        self._current_levels[:] += 1
+        self._current_levels[:] = torch.clamp(self._current_levels, 1.0, self.cfg.max_curriculum_levels)
 
     @property
     def current_levels(self):

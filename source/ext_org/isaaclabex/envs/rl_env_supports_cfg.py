@@ -16,4 +16,6 @@ class ManagerBasedRLEnv_ExtendsCfg(ManagerBasedRLEnvCfg):
     '''
     used for calcute average_episode_length
     '''
+    env_debug_flags: bool = False
+    max_iterations: int = 10000
     num_compute_average_epl: int = 10000

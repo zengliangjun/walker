@@ -13,11 +13,10 @@ params={"command_name": "base_velocity", "curriculum_level_down_threshold": 40}
 
 def command_curriculum_levels_vel(
     env: ManagerBasedRLEnv, env_ids: Sequence[int],
-      command_name,
-      curriculum_level_down_threshold,
-      curriculum_level_up_threshold
+      command_name
 ) -> torch.Tensor:
 
+    '''
     command = env.command_manager.get_term(command_name)
     if 0 != len(env_ids):
         average_episode_length = env.curriculum_manager.average_episode_length
@@ -25,6 +24,11 @@ def command_curriculum_levels_vel(
         move_down = average_episode_length < curriculum_level_down_threshold
         move_up = average_episode_length > curriculum_level_up_threshold
         command.update_curriculum(env_ids, move_down, move_up)
+    '''
+    command = env.command_manager.get_term(command_name)
+    _steps = env.cfg.max_iterations // int (command.cfg.max_curriculum_levels * 1.5)
+    if env.common_step_counter > _steps and 0 == env.common_step_counter % _steps:
+        command.curriculum_up_levels()
 
     # return the mean terrain level
     return command.current_levels

@@ -35,7 +35,7 @@ args_cli, hydra_args = parser.parse_known_args()
 if args_cli.video:
     args_cli.enable_cameras = True
 
-#args_cli.task = "Quadruped-Go2StyleLatent-v0"
+#args_cli.task = "H1StyleLatent-v0"
 #args_cli.headless = True
 
 # clear out sys.argv for Hydra
@@ -92,6 +92,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         args_cli.max_iterations if args_cli.max_iterations is not None else agent_cfg.max_iterations
     )
 
+    env_cfg.max_iterations = agent_cfg.max_iterations * agent_cfg.num_steps_per_env
     # set the environment seed
     # note: certain randomizations occur in the environment initialization so we set the seed here
     env_cfg.seed = agent_cfg.seed
