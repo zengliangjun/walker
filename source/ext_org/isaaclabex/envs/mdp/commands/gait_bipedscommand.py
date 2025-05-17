@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 class BipedsStyleCommand(CurriculumCommand):
 
+    cfg: BipedsStyleCommandCfg
+
     def __init__(self, cfg: BipedsStyleCommandCfg, env: ManagerBasedEnv):
         super(BipedsStyleCommand, self).__init__(cfg, env)
 
@@ -35,23 +37,27 @@ class BipedsStyleCommand(CurriculumCommand):
     @property
     def command(self) -> torch.Tensor:
         """The desired base velocity command in the base frame. Shape is (num_envs, 3)."""
+        """ vel 3, style 7"""
         return torch.cat([self.vel_command_b, self.style_command_b], dim=1)
 
     def _update_metrics(self):
         # time for which the command was executed
         super(BipedsStyleCommand, self)._update_metrics()
+        # TODO
 
     def _resample_command(self, env_ids: Sequence[int]):
         super(BipedsStyleCommand, self)._resample_command(env_ids)
 
         r = torch.empty(len(env_ids), device=self.device)
         styles = torch.randint_like(r, 0, 100, device=self.device)
-        styles = (styles > 33).long()
+        styles = (styles > 50).long()
         _styles_one_hot = F.one_hot(styles, num_classes=2)
 
-        _frequencie = r.uniform_(*self.cfg.ranges.frequencie)
+        _stride = r.uniform_(*self.cfg.ranges.stride)
         _duty_cycle = r.uniform_(*self.cfg.ranges.duty_cycle)
         _height = r.uniform_(*self.cfg.ranges.height)
+
+        _frequencie = torch.norm(self.vel_command_b[env_ids, :2],  dim = -1) / _stride
 
         # phase
         _phase = torch.empty((len(env_ids), 2), device=self.device)

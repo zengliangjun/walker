@@ -10,7 +10,7 @@ class CurriculumCommandCfg(commands_cfg.UniformVelocityCommandCfg):
     class_type: type = curriculum_command.CurriculumCommand
 
     is_curriculum: bool = False
-    max_curriculum: int = 1
+    max_curriculum_levels: int = 1
 
 @configclass
 class StyleCommandCfg(CurriculumCommandCfg):
@@ -88,7 +88,7 @@ class BipedsStyleCommandCfg(CurriculumCommandCfg):
     '''
     style: int = 0  #
     # gait frequencie
-    frequencie: float = 1.6
+    stride: float = 0.
 
     duty_cycle: float = 0.6
     # gait lift_height
@@ -96,7 +96,7 @@ class BipedsStyleCommandCfg(CurriculumCommandCfg):
 
     @configclass
     class Ranges(commands_cfg.UniformVelocityCommandCfg.Ranges):
-        frequencie: tuple[float, float] = MISSING
+        stride: tuple[float, float] = MISSING
         duty_cycle: tuple[float, float] = MISSING
         height: tuple[float, float] = MISSING
 

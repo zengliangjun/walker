@@ -16,7 +16,6 @@ from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 from isaaclabex.envs.mdp import observations
 from isaaclab_assets import H1_CFG
-from isaaclab_tasks.manager_based.locomotion.velocity.velocity_env_cfg import LocomotionVelocityRoughEnvCfg
 
 
 @configclass
@@ -36,18 +35,18 @@ class CommandsCfg:
         heading_command=False,
         debug_vis=True,
 
-        is_curriculum=False,
-        max_curriculum=10,
+        is_curriculum = True,
+        max_curriculum_levels=4,
 
         ranges=commands_cfg.BipedsStyleCommandCfg.Ranges(
-            lin_vel_x=(-2.0, 12.0),
-            lin_vel_y=(-1.5, 1.5),
-            ang_vel_z=(- 2.0, 2.0),
+            lin_vel_x=(-0.5, 2.5),
+            lin_vel_y=(-0.5, 0.5),
+            ang_vel_z=(- 1.0, 1.0),
             heading=(-math.pi, math.pi),
 
-            frequencie=(0.8, 4),
+            stride=(0.25, 0.45),
             duty_cycle=(0.3, 0.7),
-            height=(0.05, 0.45),
+            height=(0.05, 0.35),
         ),
     )
 
@@ -349,9 +348,25 @@ class TerminationsCfg:
     )
 
 
+from isaaclabex.envs.mdp.curriculums import command
 @configclass
-class StyleLatentEnvCfg(LocomotionVelocityRoughEnvCfg):
+class CurriculumCfg:
+    """Curriculum terms for the MDP."""
+    commands_levels = CurriculumTermCfg(
+        func=command.command_curriculum_levels_vel,
+        params={"command_name": "base_velocity",
+                  "curriculum_level_down_threshold": 200,
+                  "curriculum_level_up_threshold": 400
+                                         } )
+
+
+from isaaclab_tasks.manager_based.locomotion.velocity import velocity_env_cfg
+from isaaclabex.envs.rl_env_supports_cfg import ManagerBasedRLEnv_ExtendsCfg
+@configclass
+class LocomotionVelocityRoughEnvCfg(ManagerBasedRLEnv_ExtendsCfg):
     """Configuration for the locomotion velocity-tracking environment."""
+    # Scene settings
+    scene = velocity_env_cfg.MySceneCfg(num_envs=4096, env_spacing=2.5)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -360,17 +375,45 @@ class StyleLatentEnvCfg(LocomotionVelocityRoughEnvCfg):
     rewards: RewardsCfg = RewardsCfg()
     terminations: TerminationsCfg = TerminationsCfg()
     events: EventCfg = EventCfg()
+    curriculum: CurriculumCfg = CurriculumCfg()
+
+    def __post_init__(self):
+        """Post initialization."""
+        # general settings
+        self.decimation = 4
+        self.episode_length_s = 20.0
+        # simulation settings
+        self.sim.dt = 0.005
+        self.sim.render_interval = self.decimation
+        self.sim.physics_material = self.scene.terrain.physics_material
+        self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
+        # update sensor update periods
+        # we tick all the sensors based on the smallest update period (physics update period)
+        if self.scene.height_scanner is not None:
+            self.scene.height_scanner.update_period = self.decimation * self.sim.dt
+        if self.scene.contact_forces is not None:
+            self.scene.contact_forces.update_period = self.sim.dt
+
+        # check if terrain levels curriculum is enabled - if so, enable curriculum for terrain generator
+        # this generates terrains with increasing difficulty and is useful for training
+        if getattr(self.curriculum, "terrain_levels", None) is not None:
+            if self.scene.terrain.terrain_generator is not None:
+                self.scene.terrain.terrain_generator.curriculum = True
+        else:
+            if self.scene.terrain.terrain_generator is not None:
+                self.scene.terrain.terrain_generator.curriculum = False
+
+
+@configclass
+class StyleLatentEnvCfg(LocomotionVelocityRoughEnvCfg):
 
     def __post_init__(self):
         """Post initialization."""
         self.scene.terrain.terrain_type = "plane"
         self.scene.terrain.terrain_generator = None
         self.scene.height_scanner = None
-
         super(StyleLatentEnvCfg, self).__post_init__()
         self.scene.robot = H1_CFG.copy().replace(prim_path="{ENV_REGEX_NS}/Robot")
-        #self.scene.robot.spawn.articulation_props.enabled_self_collisions=True
-
 
 @configclass
 class StyleLatentEnvCfg_PLAY(StyleLatentEnvCfg):
