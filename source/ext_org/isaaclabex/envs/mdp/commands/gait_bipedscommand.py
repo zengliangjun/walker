@@ -53,9 +53,9 @@ class BipedsStyleCommand(CurriculumCommand):
         styles = (styles > 50).long()
         _styles_one_hot = F.one_hot(styles, num_classes=2)
 
-        _stride = r.uniform_(*self.cfg.ranges.stride)
-        _duty_cycle = r.uniform_(*self.cfg.ranges.duty_cycle)
-        _height = r.uniform_(*self.cfg.ranges.height)
+        _stride = r.uniform_(*self.cfg.ranges.stride).clone()
+        _duty_cycle = r.uniform_(*self.cfg.ranges.duty_cycle).clone()
+        _height = r.uniform_(*self.cfg.ranges.height).clone()
 
         _frequencie = torch.norm(self.vel_command_b[env_ids, :2],  dim = -1) / _stride
 

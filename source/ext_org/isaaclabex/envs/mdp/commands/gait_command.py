@@ -48,9 +48,9 @@ class StyleCommand(curriculum_command.CurriculumCommand):
         styles = torch.randint_like(r, 0, 4, dtype=torch.long, device=self.device)
         _styles_one_hot = F.one_hot(styles, num_classes=4)
 
-        _frequencie = r.uniform_(*self.cfg.ranges.frequencie)
-        _duty_cycle = r.uniform_(*self.cfg.ranges.duty_cycle)
-        _height = r.uniform_(*self.cfg.ranges.height)
+        _frequencie = r.uniform_(*self.cfg.ranges.frequencie).clone()
+        _duty_cycle = r.uniform_(*self.cfg.ranges.duty_cycle).clone()
+        _height = r.uniform_(*self.cfg.ranges.height).clone()
 
         # phase
         _phase = torch.empty((len(env_ids), 4), device=self.device)

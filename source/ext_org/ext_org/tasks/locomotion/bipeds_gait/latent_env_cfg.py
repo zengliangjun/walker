@@ -6,7 +6,6 @@ from isaaclab.managers import RewardTermCfg, SceneEntityCfg
 from isaaclab.utils import configclass
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationTermCfg as ObsTerm, CurriculumTermCfg
-from isaaclabex.envs.mdp import style_rewards
 from isaaclabex.envs.mdp.commands import commands_cfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 import isaaclab_tasks.manager_based.locomotion.velocity.config.spot.mdp as spot_mdp
@@ -230,26 +229,28 @@ class EventCfg:
         },
     )
 
+from isaaclabex.envs.mdp.rewards import bipeds_style, general
 
 @configclass
 class RewardsCfg:
     """Reward terms for the MDP."""
-    track_lin_vel_xy_exp = rewards.RewardTermCfgWithCurriculum(
+    reward_track_lin_vel_xy_exp = rewards.RewardTermCfgWithCurriculum(
         func=mdp.track_lin_vel_xy_exp,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
         weight=1.0,
         start_weight=4.0,
         end_weight=1.0,
     )
-    track_ang_vel_z_exp = rewards.RewardTermCfgWithCurriculum(
+    reward_track_ang_vel_z_exp = rewards.RewardTermCfgWithCurriculum(
         func=mdp.track_ang_vel_z_exp, params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
         weight=0.5,
         start_weight=4.0,
         end_weight=1.0,
     )
 
-    foot_clearance = rewards.RewardTermCfgWithCurriculum(
-        func=style_rewards.bipeds_foot_clearance_reward,
+    # -- penalties
+    penalize_foot_clearance = rewards.RewardTermCfgWithCurriculum(
+        func=bipeds_style.bipeds_foot_clearance_reward,
         weight=-.5,
         params={
             "std": 0.05,
@@ -260,24 +261,20 @@ class RewardsCfg:
         end_weight=-.5,
     )
 
-    # -- penalties
-    action_smoothness = rewards.RewardTermCfgWithCurriculum(
-        func=spot_mdp.action_smoothness_penalty,
-        weight=-1.0,
+    penalize_space_feet = rewards.RewardTermCfgWithCurriculum(
+        func=general.penalty_space_body,
+        weight=-0.5,
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "base_width": 0.4,
+            "body_names": ['left_knee_link', 'right_knee_link',
+                           'left_ankle_link', 'right_ankle_link'],
+        },
         start_weight=-.1,
-        end_weight=-1.0)
+        end_weight=-0.5
+    )
 
-    base_motion = rewards.RewardTermCfgWithCurriculum(
-        func=spot_mdp.base_motion_penalty, weight=-.5, params={"asset_cfg": SceneEntityCfg("robot")},
-        start_weight=-.1,
-        end_weight=-.5
-    )
-    base_orientation = rewards.RewardTermCfgWithCurriculum(
-        func=spot_mdp.base_orientation_penalty, weight=-3.0, params={"asset_cfg": SceneEntityCfg("robot")},
-        start_weight=-.5,
-        end_weight=-3.0
-    )
-    foot_slip = rewards.RewardTermCfgWithCurriculum(
+    penalize_foot_slip = rewards.RewardTermCfgWithCurriculum(
         func=spot_mdp.foot_slip_penalty,
         weight=-1.0,
         params={
@@ -288,65 +285,97 @@ class RewardsCfg:
         start_weight=-.3,
         end_weight=-1.0
     )
-    joint_acc = rewards.RewardTermCfgWithCurriculum(
+
+
+    penalize_action_smoothness = rewards.RewardTermCfgWithCurriculum(
+        func=spot_mdp.action_smoothness_penalty,
+        weight=-1.0,
+        start_weight=-.1,
+        end_weight=-1.0)
+
+    penalize_base_motion = rewards.RewardTermCfgWithCurriculum(
+        func=spot_mdp.base_motion_penalty, weight=-.5, params={"asset_cfg": SceneEntityCfg("robot")},
+        start_weight=-.1,
+        end_weight=-.5
+    )
+
+    penalize_base_orientation = rewards.RewardTermCfgWithCurriculum(
+        func=spot_mdp.base_orientation_penalty, weight=-3.0, params={"asset_cfg": SceneEntityCfg("robot")},
+        start_weight=-.5,
+        end_weight=-3.0
+    )
+
+    ##################################################
+    # join style
+    penalize_leg_joint_pos = rewards.RewardTermCfgWithCurriculum(
+        func=bipeds_style.bipeds_leg_joint_position_penalty,
+        weight=-2.5,
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "joint_names": ['left_hip_yaw', 'left_hip_roll', 'left_hip_pitch',
+                            'left_knee',
+                            #'left_shoulder_yaw',  'left_shoulder_roll', 'left_shoulder_pitch', 'left_elbow'
+
+                            'right_hip_yaw', 'right_hip_roll', 'right_hip_pitch',
+                            'right_knee',
+                            # 'right_shoulder_yaw', 'right_shoulder_roll', 'right_shoulder_pitch', 'right_elbow'
+                            ],
+            "joint_weights": [1, 1, 0.5, 1,
+                              #  5, 5, 4, 5,
+                              1, 1, 0.5, 1,
+                              #  5, 5, 4, 5,
+                            ],
+
+            "feet_names": ['left_ankle', 'right_ankle'],
+            "feet_weights": [1, 1],
+        },
+        start_weight=-.1,
+        end_weight=-2.5
+    )
+
+    penalize_shoulder_joint_freeze_pos = rewards.RewardTermCfgWithCurriculum(
+        func=general.penalty_joint_freeze,
+        weight=-2,
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "joint_names": ['left_shoulder_yaw',  'left_shoulder_roll', 'left_shoulder_pitch', 'left_elbow',
+                            'right_shoulder_yaw', 'right_shoulder_roll', 'right_shoulder_pitch', 'right_elbow'
+                            ],
+
+            "joint_weights": [1.5, 1.5, 1, 1.5,
+                        1.5, 1.5, 1, 1.5]
+        },
+        start_weight=-.3,
+        end_weight=-2
+    )
+
+    # join acc
+    penalize_joint_acc = rewards.RewardTermCfgWithCurriculum(
         func=spot_mdp.joint_acceleration_penalty,
         weight=-1.0e-4,
         params={"asset_cfg": SceneEntityCfg("robot")},
         start_weight=-4.0e-5,
         end_weight=-1.0e-4
     )
-    joint_pos = rewards.RewardTermCfgWithCurriculum(
-        func=style_rewards.bipeds_joint_position_penalty,
-        weight=-1.4,
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "joint_names": ['left_hip_yaw', 'left_hip_roll', 'left_shoulder_pitch',
-                            'left_hip_pitch', 'left_shoulder_roll', 'left_knee',
-                            'left_shoulder_yaw', 'left_ankle', 'left_elbow',
 
-                            'right_hip_yaw', 'right_hip_roll', 'right_shoulder_pitch',
-                            'right_hip_pitch', 'right_shoulder_roll', 'right_knee',
-                            'right_shoulder_yaw', 'right_ankle', 'right_elbow'],
-
-            "weights": [1.5, 1.5, 0.6,
-                        0.6, 1.5, 0.6,
-                        1.5, 0.6, 0.6,
-
-                        1.5, 1.5, 0.6,
-                        0.6, 1.5, 0.6,
-                        1.5, 0.6, 0.6,]
-        },
-        start_weight=-.1,
-        end_weight=-1.4
-    )
-
-    space_feet = rewards.RewardTermCfgWithCurriculum(
-        func=style_rewards.space_feet_penalty,
-        weight=-0.5,
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "base_names": ['left_hip_yaw_link', 'right_hip_yaw_link'],
-            "feet_names": ['left_knee_link', 'right_knee_link',
-                           'left_ankle_link', 'right_ankle_link'],
-        },
-        start_weight=-.1,
-        end_weight=-0.5
-    )
-
-    joint_deviation_torso = rewards.RewardTermCfgWithCurriculum(
+    # join torso
+    penalize_joint_deviation_torso = rewards.RewardTermCfgWithCurriculum(
         func=mdp.joint_deviation_l1, weight=-5, params={"asset_cfg": SceneEntityCfg("robot", joint_names="torso")},
         start_weight=-.5,
         end_weight=-5
     )
 
-    joint_torques = rewards.RewardTermCfgWithCurriculum(
+    # join torques
+    penalize_joint_torques = rewards.RewardTermCfgWithCurriculum(
         func=spot_mdp.joint_torques_penalty,
         weight=-5.0e-4,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*")},
         start_weight=-1.0e-4,
         end_weight=-5.0e-4
     )
-    joint_vel = rewards.RewardTermCfgWithCurriculum(
+
+    # join vel
+    penalize_joint_vel = rewards.RewardTermCfgWithCurriculum(
         func=spot_mdp.joint_velocity_penalty,
         weight=-1.0e-4,
         params={"asset_cfg":
@@ -393,19 +422,20 @@ class CurriculumCfg:
         params={"reward_curriculum_levels": 10,
                  "reward_curriculum_names": [
 
-                'track_lin_vel_xy_exp',
-                'track_ang_vel_z_exp',
-                'foot_clearance',
-                'action_smoothness',
-                'base_motion',
-                #'base_orientation',
-                'foot_slip',
-                'joint_acc',
-                'joint_pos',
-                'space_feet',
-                'joint_deviation_torso',
-                'joint_torques',
-                'joint_vel']} )
+                'reward_track_lin_vel_xy_exp',
+                'reward_track_ang_vel_z_exp',
+                'penalize_foot_clearance',
+                'penalize_space_feet',
+                'penalize_foot_slip',
+                'penalize_action_smoothness',
+                'penalize_base_motion',
+                #'penalize_base_orientation',
+                'penalize_leg_joint_pos',
+                'penalize_shoulder_joint_freeze_pos',
+                'penalize_joint_deviation_torso',
+                'penalize_joint_acc',
+                'penalize_joint_torques',
+                'penalize_joint_vel']} )
 
 
 from isaaclab_tasks.manager_based.locomotion.velocity import velocity_env_cfg
