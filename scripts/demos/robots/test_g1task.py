@@ -37,6 +37,11 @@ import isaaclab.sim as sim_utils
 from isaaclab.assets import Articulation
 from isaaclab.sim import SimulationContext
 
+import sys
+import os.path as osp
+_root = osp.join(osp.dirname(__file__), "../../../source/ext_org")
+sys.path.append(_root)
+
 ##
 # Pre-defined configs
 ##
@@ -64,9 +69,12 @@ def design_scene(sim: sim_utils.SimulationContext) -> tuple[list, torch.Tensor]:
 
     # Robots
     cassie = Articulation(CASSIE_CFG.replace(prim_path="/World/Cassie"))
-    h1 = Articulation(G1_CFG.replace(prim_path="/World/H1"))
+    H1_CFG.spawn.articulation_props.fix_root_link = True
+    h1 = Articulation(H1_CFG.replace(prim_path="/World/H1"))
+
+    UNITREE_GO129FIXEDWRIST_FULLCOLLISION_CFG.spawn.articulation_props.fix_root_link = True
     g1 = Articulation(UNITREE_GO129FIXEDWRIST_FULLCOLLISION_CFG.replace(prim_path="/World/G1"))
-    robots = [cassie, h1, g1]
+    robots = [cassie, g1, h1]
 
     return robots, origins
 

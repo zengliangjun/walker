@@ -36,3 +36,7 @@ class StyleLatentPPORunnerCfg(RslRlOnPolicyRunnerCfg):
         desired_kl=0.01,
         max_grad_norm=1.0,
     )
+
+@configclass
+class StyleG123LatentPPORunnerCfg(StyleLatentPPORunnerCfg):
+    experiment_name = "g123dofs_stylelatent_flat"
